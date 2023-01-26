@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<html>
+<head>
+    <title>글쓰기</title>
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/logo.svg}" />
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btn = document.getElementById("button");
+
+            btn.addEventListener('click', function () {
+                const boardTitle = $("#title").val();
+                const boardContent =$("#summernote").val();
+                const boardValue = $("#valaue").val();
+                const boardWriter = $("#email").val();
+
+                var formData = new FormData();
+                formData.append("boardTitle", boardTitle)
+                formData.append("boardContent", boardContent)
+                formData.append("boardValue", boardValue)
+                formData.append("boardWriter", boardWriter)
+
+                if(boardTitle == ""){
+                    alert("제목을 입력하세요!")
+                    return false;
+                }
+                if(boardContent == ""){
+                    alert("내용을 입력하세요!")
+                    return false;
+                }
+
+                console.log(formData, boardContent,boardValue,boardTitle,boardWriter)
+
+                $.ajax({
+                    url: "/bbs/freeInsert",
+                    method: "post",
+                    enctype: 'multipart/form-data',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function () {
+                        alert("글작성이 완료되었습니다.")
+                        window.location.href = "/bbs/free"
+                    },
+                    error: function () {
+                        alert("알수 없는 이유로 글작성에 실패하였습니다.")
+                    }
+                })
+            })
+            $('#summernote').summernote({
+                height: 500,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['insert', ['link', 'picture', 'hr']],
+                ],
+                callbacks : {
+                    onImageUpload : function(files, editor, welEditable) {
+                        for (var i = files.length - 1; i >= 0; i--) {
+                            uploadSummernoteImageFile(files[i],
+                                this);
+                        }
+                    }
+                }
+            });
+
+            function uploadSummernoteImageFile(file, el) {
+                data = new FormData();
+                data.append("file", file);
+                $.ajax({
+                    data : data,
+                    type : "POST",
+                    url : "/bbs/images",
+                    contentType : false,
+                    enctype : 'multipart/form-data',
+                    processData : false,
+                    success : function(data) {
+                        $(el).summernote('editor.insertImage', data.url);
+                    }
+                });
+            }
+        })
+
+    </script>
+</head>
+<body>
+<th:block th:replace="~{fragments/nav.html :: content}"></th:block>
+<main>
+    <div class="container">
+        <form id="form" method="post">
+            <input type="hidden" name="email" id="email" th:value="${session.member.getMemberEmail()}">
+            <input type="hidden" name="valaue" id="valaue" value="free">
+            <table class="table table-bordered" style="text-align: center; vertical-align: middle">
+                <tr>
+                    <td><h1>글 작성</h1></td>
+                </tr>
+                <tr>
+                    <td><input type="text" id="title" class="form-control" placeholder="제목을 입력하세요"></td>
+                </tr>
+                <tr>
+                    <td><textarea id="summernote" name="editordata"></textarea></td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <button id="button" type="button" class="btn btn-info float-right">글작성</button>
+                    </td>
+                </tr>
+
+            </table>
+        </form>
+    </div>
+</main>
+<th:block th:replace="~{fragments/footer.html :: content}"></th:block>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.one.mapper.BoardMapper">
+
+
+    <insert id="insertBoard" parameterType="com.example.one.entity.BoardEntity">
+        insert into board ( boardWriter,boardTitle, boardContent, bordValue)
+        values (#{boardWriter},#{boardTitle}, #{boardContent}, #{boardValue})
+    </insert>
+
+
+    <select id="selectBoardVlaue" parameterType="com.example.one.entity.BoardValueEntity"
+            resultType="com.example.one.entity.BoardValueEntity">
+        select `boardValue`
+        from boardValue
+        order by `index` ASC
+    </select>
+
+    <select id="selectFreeBoard" resultType="com.example.one.entity.VO.boardMemberVO" parameterType="com.example.one.entity.VO.Criteria">
+        select `boardNum`, `boardTitle`, `boardCount`, `boardLikes`, `boardCreatedAt`, `boardWriter`, `memberName`
+        from onethecom.board
+                 left join member on board.boardWriter = member.memberEmail
+        where bordValue like 'free'
+        order by boardNum DESC
+        limit #{pageStart},#{perPageNum}
+    </select>
+
+    <select id="totalCountofFreeBoard" resultType="int">
+        select count(*) from board where bordValue ='free'
+    </select>
+
+    <select id="totalCountofPopBoard" resultType="int">
+        select count(*) from board where bordValue ='hot'
+    </select>
+
+    <select id="totalCountofNoticeBoard" resultType="int">
+        select count(*) from board where bordValue ='notice'
+    </select>
+
+    <select id="selectNoticeBoard" resultType="com.example.one.entity.BoardEntity" parameterType="com.example.one.entity.VO.Criteria">
+        select `boardNum`,`boardTitle`, `boardCount`, `boardLikes`, `boardCreatedAt`,`boardWriter`
+        from board
+        where bordValue like 'notice'
+        limit #{pageStart},#{perPageNum}
+    </select>
+
+    <select id="selectFreeDetail" parameterType="com.example.one.entity.VO.boardMemberVO" resultType="com.example.one.entity.VO.boardMemberVO">
+        select `boardContent`, `boardTitle`, `boardCount`, `boardLikes`, `boardCreatedAt`,`boardWriter`,`memberName`
+        from board
+                 left join member on board.boardWriter = member.memberEmail
+        where boardNum = #{boardNum}
+    </select>
+
+    <update id="BoardCount" parameterType="com.example.one.entity.BoardEntity">
+        update board set boardCount = boardCount+1 where boardNum=#{boardNum}
+    </update>
+
+    <update id="LikeCount" parameterType="com.example.one.entity.BoardEntity">
+        update board inner join onethecom.member set boardLikesUser = CONCAT(boardLikesUser,',',#{boardWriter}), boardLikes = boardLikes+1 where boardWriter != #{boardWriter} and member.memberEmail = #{boardWriter} and `boardNum`=#{boardNum}
+    </update>
+
+    <update id="undoLikeCount" parameterType="com.example.one.entity.BoardEntity">
+        update board inner join onethecom.member set boardLikesUser = replace(boardLikesUser, #{boardWriter},''), boardLikes = boardLikes-1 where member.memberEmail = #{boardWriter} and `boardNum`=#{boardNum}
+    </update>
+
+    <select id="selectLikedUser" parameterType="com.example.one.entity.BoardEntity" resultType="com.example.one.entity.BoardEntity">
+        select `boardLikesUser`,`boardLikes` from board where `boardNum` =#{boardNum}
+    </select>
+
+    <delete id="deletePost" parameterType="com.example.one.entity.BoardEntity">
+        delete from board where boardNum =#{boardNum}
+    </delete>
+
+    <delete id="deleteComments" parameterType="com.example.one.entity.BoardEntity">
+        delete from comment where commentIndex =#{commentIndex}
+    </delete>
+
+    <update id="editPost" parameterType="com.example.one.entity.BoardEntity">
+        update board set boardTitle = #{boardTitle}, boardContent = #{boardContent} where boardNum =#{boardNum}
+    </update>
+
+    <select id="selectEditPost" parameterType="com.example.one.entity.BoardEntity" resultType="com.example.one.entity.BoardEntity">
+        select boardNum,
+               boardWriter,
+               boardTitle,
+               boardContent,
+               boardCount,
+               boardCreatedAt,
+               boardLikes,
+               boardLikesUser,
+               bordValue
+        from board
+        where boardNum =#{boardNum}
+    </select>
+
+    <select id="mainFreeRecent" parameterType="com.example.one.entity.BoardEntity" resultType="com.example.one.entity.BoardEntity">
+        select boardNum,
+               boardWriter,
+               boardTitle,
+               boardContent,
+               boardCount,
+               boardCreatedAt,
+               boardLikes,
+               boardLikesUser
+        from board
+        where bordValue ='free'
+        order by boardNum desc
+        limit 10
+    </select>
+
+    <select id="mainPopRecent" parameterType="com.example.one.entity.BoardEntity" resultType="com.example.one.entity.BoardEntity">
+        select boardNum,
+               boardWriter,
+               boardTitle,
+               boardContent,
+               boardCount,
+               boardCreatedAt,
+               boardLikes,
+               boardLikesUser
+        from board
+        where bordValue ='hot'
+        order by boardNum desc
+        limit 10
+    </select>
+
+    <select id="HotArticle" parameterType="com.example.one.entity.VO.Criteria" resultType="com.example.one.entity.VO.boardMemberVO">
+        select boardNum,
+               boardWriter,
+               boardTitle,
+               boardContent,
+               boardCount,
+               boardCreatedAt,
+               boardLikes,
+               boardLikesUser,
+               bordValue,
+               `memberName`
+        from board
+                 left join member on board.boardWriter = member.memberEmail
+        where bordValue = 'hot'
+        order by boardNum desc
+        limit #{pageStart},#{perPageNum}
+    </select>
+
+    <update id="insertHotArticle">
+        update board set bordValue = 'hot' where boardLikes >10 and boardCreatedAt BETWEEN DATE_ADD(NOW(), INTERVAL -1 DAY ) AND NOW()
+    </update>
+
+
+    <select id="selectParentComments" parameterType="com.example.one.entity.CommentEntity" resultType="com.example.one.entity.CommentEntity">
+        select *
+        from comment
+        where commentIndex = #{commentIndex}
+        order by commentIndex desc
+    </select>
+
+    <update id="replySequence" parameterType="com.example.one.entity.CommentEntity">
+        update comment
+        set commentSequence = commentSequence + 1
+        where commentGroup = #{commentGroup}
+          and commentSequence > #{commentSequence}
+    </update>
+
+    <insert id="commentInsert" parameterType="com.example.one.entity.CommentEntity">
+        <selectKey keyProperty="commentIndex,commentGroup" resultType="com.example.one.entity.CommentEntity" order="BEFORE">
+            select IFNULL(max(commentIndex)+1,1) as commentIndex,
+            IFNULL(max(commentGroup)+1,0) as commentGroup from onethecom.comment
+        </selectKey>
+        insert into comment(commentIndex,commentWriter, commentContent, commentGroup,boardNum)
+        values (#{commentIndex},#{commentWriter},#{commentContent},#{commentGroup},#{boardNum})
+    </insert>
+
+
+    <insert id="replyInsert" parameterType="com.example.one.entity.CommentEntity">
+<selectKey keyProperty="commentIndex" resultType="com.example.one.entity.CommentEntity" order="BEFORE">
+    select IFNULL(max(commentIndex)+1,1) as commentIndex from onethecom.comment
+</selectKey>
+        insert into comment(commentIndex,commentWriter, commentContent, commentGroup, commentSequence,
+        commentLevel,boardNum)
+        values (#{commentIndex},#{commentWriter},#{commentContent},#{commentGroup},#{commentSequence},#{commentLevel},#{boardNum})
+    </insert>
+
+
+    <select id="AllComment" parameterType="com.example.one.entity.CommentEntity" resultType="com.example.one.entity.CommentEntity">
+        select * from comment where boardNum = #{boardNum} order by `commentGroup`
+    </select>
+
+    <select id="myComments" resultType="com.example.one.entity.CommentEntity">
+        select * from comment where commentWriter = #{commentWriter}
+    </select>
+
+
+</mapper>

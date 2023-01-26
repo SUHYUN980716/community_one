@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>홈</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/logo.svg}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        #wrap {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #section1 {
+            width: 100%;
+            height: 100%;
+            margin: 1.3rem;
+        }
+
+        #section2 {
+            width: 100%;
+            height: 100%;
+            margin: 1.3rem;
+        }
+
+        .tbl {
+            border-bottom: 1px solid cornflowerblue;
+            width: 14rem;
+            height: 3rem;
+            text-align: center;
+            vertical-align: middle;
+            font-weight: bold;
+            color: cornflowerblue;
+        }
+
+        .tbl2 {
+            width: 14rem;
+            height: 3rem;
+            border-bottom: 1px solid grey;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .h1 {
+            font-weight: bold;
+            color: cornflowerblue;
+        }
+        #linkWrap{
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+            margin:90px;
+            background-image:url(../../resources/static/images/logo.svg);
+            background-size: cover;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+<th:block th:replace="~{fragments/nav.html :: content}"></th:block>
+<div class="container">
+    <div class="container-fluid">
+        <main class="_main">
+            <div id="wrap">
+                <section id="section1">
+                    <h4 class="h1">&#128293;24 인기글!</h4>
+                    <table id="board1List">
+                        <tr class="tbl">
+                            <th class="tbl">제목</th>
+                            <th class="tbl">조회수</th>
+                            <th class="tbl">날짜</th>
+                            <th class="tbl">좋아요</th>
+                        </tr>
+                        <th:block th:if="${session.member == null}">
+                            <tr class="tbl">
+                                <th colspan="4">로그인 이후 열람 가능 합니다.</th>
+                            </tr>
+                        </th:block>
+                        <th:block th:if="${session.member != null}">
+                            <tr th:each=" lists : ${articleHot}" class="tbl2">
+                                <td class="tbl2"><a th:href="@{/bbs/popDetail(boardNum=${lists.getBoardNum()})}"
+                                                    th:text="${lists.getBoardTitle()}">제목</a></td>
+                                <td th:text="${lists.getBoardCount()}" class="tbl2">조회수</td>
+                                <td th:text="${#dates.format(lists.getBoardCreatedAt(), 'yyyy-MM-dd')}" class="tbl2">
+                                    날짜
+                                </td>
+                                <td th:text="${lists.getBoardLikes()}" class="tbl2">좋아요</td>
+                            </tr>
+                        </th:block>
+                    </table>
+                </section>
+                <section id="section2">
+                    <h4 class="h1">&#128075;최근 올라온 글!</h4>
+                    <table id="board2List">
+                        <tr class="tbl">
+                            <th class="tbl">제목</th>
+                            <th class="tbl">조회수</th>
+                            <th class="tbl">날짜</th>
+                            <th class="tbl">좋아요</th>
+                        </tr>
+                        <th:block th:if="${session.member == null}">
+                            <tr class="tbl">
+                                <th colspan="4">로그인 이후 열람 가능 합니다.</th>
+                            </tr>
+                        </th:block>
+                        <th:block th:if="${session.member != null}">
+                            <tr th:each=" list : ${article}" class="tbl2">
+                                <td class="tbl2"><a th:href="@{/bbs/freeDetail(boardNum=${list.getBoardNum()})}"
+                                                    th:text="${list.getBoardTitle()}">제목</a></td>
+                                <td th:text="${list.getBoardCount()}" class="tbl2">조회수</td>
+                                <td th:text="${#dates.format(list.getBoardCreatedAt(), 'yyyy-MM-dd')}" class="tbl2">날짜
+                                </td>
+                                <td th:text="${list.getBoardLikes()}" class="tbl2">좋아요</td>
+                            </tr>
+                        </th:block>
+                    </table>
+                </section>
+            </div>
+        </main>
+        <th:block th:if="${session.member == null}">
+        <div id="linkWrap">
+            <a th:href="@{/mbr/register}" class="display-4" style="display: block"> &#127939; 회원가입 하러가기!</a>
+            <a th:href="@{/mbr/login}" class="display-4" style="display: block"> &#128076; 로그인 하러가기!</a>
+        </div>
+        </th:block>
+    </div>
+</div>
+<th:block th:replace="~{fragments/footer.html :: content}"></th:block>
+</body>
+</html>

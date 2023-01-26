@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.one.mapper.memberMapper">
+
+    <insert id="insertMember" parameterType="com.example.one.entity.MemberEntity">
+        insert into member (memberEmail, memberPassword, memberJoinDate, memberName) values(#{memberEmail},#{memberPassword},DEFAULT,#{memberName})
+    </insert>
+
+    <select id="loginMember" parameterType="com.example.one.entity.MemberEntity" resultType="com.example.one.entity.MemberEntity">
+        select `memberNum`      as `memberNum`,
+               `memberEmail`    as `memberEmail`,
+               `memberPassword` as `memberPassword`,
+               `memberJoinDate` as `memberJoinDate`,
+               `memberName`     as `memberName`
+        from member
+        where memberEmail = #{memberEmail}
+          AND memberPassword = #{memberPassword}
+    </select>
+
+    <select id="selectPassword" parameterType="com.example.one.entity.MemberEntity" resultType="com.example.one.entity.MemberEntity">
+        select `memberNum`    as `memberEmail`
+        from member
+        where memberEmail = #{memberEmail}
+          and memberPassword = #{memberPassword}
+    </select>
+
+    <update id="updatePassword" parameterType="com.example.one.entity.MemberEntity">
+        update member set memberPassword = #{memberPassword} where memberEmail=#{memberEmail}
+    </update>
+
+    <update id="updateNickName" parameterType="com.example.one.entity.MemberEntity">
+        update member set memberName = #{memberName} where memberEmail=#{memberEmail}
+    </update>
+
+    <delete id="deleteUser" parameterType="com.example.one.entity.MemberEntity">
+        delete from member where memberEmail = #{memberEmail} and memberPassword =#{memberPassword}
+    </delete>
+
+    <select id="selectUserArticle" parameterType="com.example.one.entity.BoardEntity" resultType="com.example.one.entity.BoardEntity">
+        select boardNum,
+               boardWriter,
+               boardTitle,
+               boardContent,
+               boardCount,
+               boardCreatedAt,
+               boardLikes,
+               bordValue
+        from board
+        where boardWriter =#{boardWriter}
+    </select>
+
+    <select id="DuplicationCheckEmail" parameterType="com.example.one.entity.MemberEntity" resultType="com.example.one.entity.MemberEntity">
+        select memberEmail from member where memberEmail = #{memberEmail}
+    </select>
+
+    <select id="DuplicationCheckName" parameterType="com.example.one.entity.MemberEntity" resultType="com.example.one.entity.MemberEntity">
+        select memberName from member where memberName = #{memberName}
+    </select>
+
+
+
+
+</mapper>
